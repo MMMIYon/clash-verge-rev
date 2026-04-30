@@ -50,19 +50,21 @@ jobs:
       - name: Install dependencies (ubuntu only)
         run: |
           sudo apt-get update
+          # 移除了无法通过 apt 安装的 appimagetool，并保留 Tauri 必需的系统库
           sudo apt-get install -y --no-install-recommends \
-            libxslt1.1 \
             libwebkit2gtk-4.1-dev \
+            libbuild-bus-curl-dev \
             libayatana-appindicator3-dev \
             librsvg2-dev \
-            patchelf \
-            librsvg2-bin \
-            appimagetool
+            libasound2-dev \
+            libjavascriptcoregtk-4.1-dev \
+            libsoup-3.0-dev \
+            patchelf
 
       - name: Install Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22' # 升级到 Node 22 以保持长期支持
+          node-version: '22'
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -84,7 +86,7 @@ jobs:
           releaseName: 'Clash Verge Rev Build'
           releaseDraft: true
           tauriScript: pnpm
-          # 关键修改：强制要求构建 appimage
+          # 关键修改：Tauri Action 会自动处理 AppImage 逻辑，无需手动安装工具
           args: --target ${{ matrix.target }} --bundle appimage
 
       # 第三步：将生成的 AppImage 提取出来
