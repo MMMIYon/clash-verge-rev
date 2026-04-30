@@ -50,10 +50,13 @@ jobs:
       - name: Install dependencies (ubuntu only)
         run: |
           sudo apt-get update
-          # 移除了无法通过 apt 安装的 appimagetool，并保留 Tauri 必需的系统库
+          # 修正了错误的包名，并确保包含 Tauri 必需的系统库
           sudo apt-get install -y --no-install-recommends \
             libwebkit2gtk-4.1-dev \
-            libbuild-bus-curl-dev \
+            build-essential \
+            curl \
+            wget \
+            libssl-dev \
             libayatana-appindicator3-dev \
             librsvg2-dev \
             libasound2-dev \
@@ -86,7 +89,7 @@ jobs:
           releaseName: 'Clash Verge Rev Build'
           releaseDraft: true
           tauriScript: pnpm
-          # 关键修改：Tauri Action 会自动处理 AppImage 逻辑，无需手动安装工具
+          # 关键修改：Tauri Action 会自动处理 AppImage 逻辑
           args: --target ${{ matrix.target }} --bundle appimage
 
       # 第三步：将生成的 AppImage 提取出来
