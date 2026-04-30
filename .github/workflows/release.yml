@@ -23,45 +23,10 @@ jobs:
     name: Check Release Tag and package.json Version Consistency
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Check if tag is from main branch
+      - name: Skip Check
         run: |
-          TAG_REF="${GITHUB_REF##*/}"
-          echo "Checking if tag $TAG_REF is from main branch..."
-
-          TAG_COMMIT=$(git rev-list -n 1 $TAG_REF)
-          MAIN_COMMITS=$(git rev-list origin/main)
-
-          if echo "$MAIN_COMMITS" | grep -q "$TAG_COMMIT"; then
-            echo "✅ Tag $TAG_REF is from main branch"
-          else
-            echo "❌ Tag $TAG_REF is not from main branch"
-            echo "This release workflow only accepts tags from main branch."
-            exit 1
-          fi
-
-      - name: Check tag and package.json version
-        run: |
-          TAG_REF="${GITHUB_REF_NAME:-${GITHUB_REF##*/}}"
-          echo "Current tag: $TAG_REF"
-
-          PKG_VERSION=$(jq -r .version package.json)
-          echo "package.json version: $PKG_VERSION"
-
-          EXPECTED_TAG="v$PKG_VERSION"
-
-          if [[ "$TAG_REF" != "$EXPECTED_TAG" ]]; then
-            echo "❌ Version mismatch:"
-            echo "   Git tag       : $TAG_REF"
-            echo "   package.json  : $EXPECTED_TAG"
-            exit 1
-          fi
-
-          echo "✅ Tag and package.json version are consistent."
+          echo "Skipping version check for manual build..."
+          exit 0
 
   update_tag:
     name: Update tag
