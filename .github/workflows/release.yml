@@ -12,9 +12,10 @@ env:
   CARGO_INCREMENTAL: 0
   RUST_BACKTRACE: short
   HUSKY: 0
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # 解决 Node.js 20 弃用警告
 
 jobs:
-  # 第一步：修改后的检查任务，现在它只是个摆设，会直接通过
+  # 第一步：修改后的检查任务
   check_tag_version:
     name: Check Release Tag and package.json Version Consistency
     runs-on: ubuntu-latest
@@ -32,7 +33,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # 我们只需要 Linux 环境来生成 AppImage
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
 
@@ -50,17 +50,23 @@ jobs:
       - name: Install dependencies (ubuntu only)
         run: |
           sudo apt-get update
-          sudo apt-get install -y libxslt1.1 libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf librsvg2-bin appimagetool
+          sudo apt-get install -y --no-install-recommends \
+            libxslt1.1 \
+            libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            librsvg2-bin \
+            appimagetool
 
       - name: Install Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22' # 升级到 Node 22 以保持长期支持
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
-          version: 8
           run_install: false
 
       - name: Pnpm install and check
@@ -81,7 +87,7 @@ jobs:
           # 关键修改：强制要求构建 appimage
           args: --target ${{ matrix.target }} --bundle appimage
 
-      # 第三步：将生成的 AppImage 提取出来，防止 Release 步骤失败导致找不到文件
+      # 第三步：将生成的 AppImage 提取出来
       - name: Upload AppImage Artifact
         uses: actions/upload-artifact@v4
         with:
